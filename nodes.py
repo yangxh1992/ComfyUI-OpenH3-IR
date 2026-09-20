@@ -162,7 +162,7 @@ class OpenH3IRCompile(io.ComfyNode):
                 io.String.Input(
                     "intent", multiline=True, default="",
                     placeholder="one plain sentence, what happens, with @ for anything in the "
-                                "tray\n@carguy walks onto the wet gantry in the rain and stops when "
+                                "tray\n@picture1 walks onto the wet gantry in the rain and stops when "
                                 "he sees the city below",
                     tooltip="One plain sentence. Not a tag list and not a shot breakdown, because "
                             "the compiler writes those. Say the action and the beat you care "

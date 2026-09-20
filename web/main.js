@@ -29,6 +29,7 @@
  */
 import { app } from "../../scripts/app.js";
 import { attachPrompt, promptFacts } from "./prompt.js";
+import { localize, t, tr } from "./i18n.js";
 
 const VERSION = "main v1";
 console.log("[OpenH3-IR]", VERSION);
@@ -151,7 +152,7 @@ class Panel {
      * an offset parent. The panel is the positioned ancestor of both. */
     this.box = el("textarea", { class: "oh3m-box", spellcheck: true,
       placeholder: "one plain sentence, what happens, with @ for anything in the tray\n"
-                 + "@carguy walks onto the wet gantry in the rain and stops when he sees the city "
+                 + "@picture1 walks onto the wet gantry in the rain and stops when he sees the city "
                  + "below" });
     this.box.addEventListener("input", () => {
       this.w.intent.value = this.box.value;
@@ -208,6 +209,7 @@ class Panel {
       if (this.open && !inList && !onOpener) { this.open = null; this.renderList(); }
     });
 
+    localize(this.root);
     this.render();
   }
 
@@ -255,8 +257,8 @@ class Panel {
   renderReport() {
     const f = promptFacts(this.node, this.box.value);
     const say = (text, bad = false) => {
-      this.msg.textContent = text;
-      this.msg.title = text;
+      this.msg.textContent = tr(text);
+      this.msg.title = tr(text);
       this.msg.className = "oh3m-msg" + (bad ? " oh3m-bad" : "");
     };
     this.renderChip(f);
@@ -318,7 +320,7 @@ class Panel {
     this.rows.shots.value.textContent = String(this.w.shots.value);
     this.rows.creativity.value.textContent = String(this.w.creativity.value);
     this.rows.silent.value.textContent = this.w.silent.value ? "none" : "the writer decides";
-    this.rows.spoken_language.value.textContent = String(this.w.spoken_language.value);
+    this.rows.spoken_language.value.textContent = t(String(this.w.spoken_language.value));
     this.foot.seed.value.textContent = String(this.w.seed.value);
     this.foot.sizing.value.textContent = String(this.w.sizing.value);
     this.foot.effort.value.textContent = String(this.w.effort.value);
@@ -474,7 +476,7 @@ class Panel {
     const held = String(this.w.spoken_language.value);
     const offered = this.w.spoken_language.options?.values || [held];
     for (const lang of offered) {
-      this.list.append(this.lrow(lang, { on: lang === held,
+      this.list.append(this.lrow(t(lang), { on: lang === held,
         onclick: () => this.set("spoken_language", lang) }));
     }
   }

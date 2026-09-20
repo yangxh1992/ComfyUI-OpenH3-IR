@@ -160,6 +160,14 @@ export function promptFacts(node, text) {
            trayCount: slots.length, named, unknown, locked, unclosed };
 }
 
+const CARET_STYLE = [
+  "boxSizing", "width", "height", "borderTopWidth", "borderRightWidth",
+  "borderBottomWidth", "borderLeftWidth", "paddingTop", "paddingRight", "paddingBottom",
+  "paddingLeft", "fontStyle", "fontVariant", "fontWeight", "fontStretch", "fontSize",
+  "lineHeight", "fontFamily", "textAlign", "textTransform", "textIndent", "textDecoration",
+  "letterSpacing", "wordSpacing", "tabSize", "direction", "overflowWrap", "wordBreak",
+];
+
 class Picker {
   constructor(textarea, node) {
     this.ta = textarea;
@@ -173,7 +181,38 @@ class Picker {
     this.sel = 0;
     textarea.addEventListener("input", () => this.consider());
     textarea.addEventListener("keydown", (e) => this.keys(e));
+    textarea.addEventListener("scroll", () => {
+      if (this.box.style.display !== "none") this.show();
+    });
     textarea.addEventListener("blur", () => setTimeout(() => this.hide(), 150));
+  }
+
+  caretRect() {
+    const taRect = this.ta.getBoundingClientRect();
+    const style = getComputedStyle(this.ta);
+    const mirror = document.createElement("div");
+    mirror.style.position = "absolute";
+    mirror.style.left = "-100000px";
+    mirror.style.top = "0";
+    mirror.style.visibility = "hidden";
+    mirror.style.whiteSpace = "pre-wrap";
+    mirror.style.overflow = "hidden";
+    for (const name of CARET_STYLE) mirror.style[name] = style[name];
+    mirror.textContent = this.ta.value.slice(0, this.ta.selectionStart);
+    if (mirror.textContent.endsWith("\n")) mirror.textContent += " ";
+    const marker = document.createElement("span");
+    marker.textContent = this.ta.value.slice(this.ta.selectionStart) || ".";
+    mirror.append(marker);
+    document.body.append(mirror);
+
+    const scaleX = taRect.width / Math.max(1, this.ta.offsetWidth);
+    const scaleY = taRect.height / Math.max(1, this.ta.offsetHeight);
+    const left = taRect.left + (marker.offsetLeft - this.ta.scrollLeft) * scaleX;
+    const top = taRect.top + (marker.offsetTop - this.ta.scrollTop) * scaleY;
+    const lineHeight = (Number.parseFloat(style.lineHeight) || Number.parseFloat(style.fontSize)
+      || 16) * scaleY;
+    mirror.remove();
+    return { left, top, bottom: top + lineHeight };
   }
 
   consider() {
@@ -218,10 +257,26 @@ class Picker {
       return row;
     }));
     const r = this.ta.getBoundingClientRect();
-    this.box.style.left = `${r.left}px`;
-    this.box.style.top = `${r.bottom + 2}px`;
-    this.box.style.minWidth = `${Math.max(180, r.width * 0.6)}px`;
+    const caret = this.caretRect();
+    const inset = 4;
+    const innerWidth = Math.max(0, r.width - inset * 2);
+    const innerHeight = Math.max(0, r.height - inset * 2);
+    this.box.style.minWidth = `${Math.min(innerWidth, Math.max(180, r.width * 0.6))}px`;
+    this.box.style.maxWidth = `${innerWidth}px`;
+    this.box.style.maxHeight = `${Math.min(240, innerHeight)}px`;
     this.box.style.display = "block";
+    const shown = this.box.getBoundingClientRect();
+    const minLeft = r.left + inset;
+    const maxLeft = Math.max(minLeft, r.right - shown.width - inset);
+    const left = Math.max(minLeft, Math.min(caret.left, maxLeft));
+    const below = caret.bottom + 2;
+    const above = caret.top - shown.height - 2;
+    const minTop = r.top + inset;
+    const maxTop = Math.max(minTop, r.bottom - shown.height - inset);
+    const preferredTop = below <= maxTop ? below : above;
+    const top = Math.max(minTop, Math.min(preferredTop, maxTop));
+    this.box.style.left = `${left}px`;
+    this.box.style.top = `${top}px`;
   }
 
   hide() {
@@ -481,9 +536,9 @@ class Chips {
 }
 
 const CSS = `
-.oh3-pick{position:fixed;z-index:10000;background:#14161c;border:1px solid #2e3440;border-radius:6px;
+.oh3-pick{position:fixed;z-index:10000;box-sizing:border-box;background:#14161c;border:1px solid #2e3440;border-radius:6px;
   padding:3px;font-family:system-ui,sans-serif;font-size:12px;color:#dde2ea;max-height:240px;
-  overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.5);}
+  overflow-x:hidden;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.5);}
 .oh3-pickrow{display:flex;align-items:center;gap:7px;padding:4px 7px;border-radius:4px;cursor:pointer;}
 .oh3-pickrow:hover,.oh3-picksel{background:#232735;}
 .oh3-pickthumb{width:28px;height:20px;object-fit:cover;border-radius:3px;flex:0 0 auto;}

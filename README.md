@@ -1,5 +1,7 @@
 # OpenH3-IR Nodes for ComfyUI
 
+[English](README.md) | [简体中文](README.zh-CN.md)
+
 **Write the shot. Drop the references. Render.**
 
 The ComfyUI-native way to use [OpenH3-IR](https://github.com/ruashots/open-h3-ir), the open local Context-IR implementation for MiniMax H3.
@@ -136,6 +138,16 @@ A text-only graph needs **Main + Setup**.
 The moment you add a picture, clip or sound, add **Media** and connect its `media` output to Main.
 
 Director is always optional.
+
+### Interface language
+
+English remains the default, and the node pack also includes a Simplified Chinese interface.
+Open **Settings → OpenH3-IR → Language**, choose **Auto**, **English**, or **简体中文**, then reload
+ComfyUI. Auto follows ComfyUI's locale and falls back to the browser locale.
+
+Localization changes labels, controls, help text, and status messages only. Node IDs, widget names,
+stored option values, API payloads, and saved workflows remain unchanged, so workflows can move
+between English and Chinese installations without conversion.
 
 ---
 

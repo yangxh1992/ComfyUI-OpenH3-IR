@@ -25,6 +25,7 @@
  */
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
+import { localize, slotLabel, tr } from "./i18n.js";
 
 const VERSION = "tray v16";
 console.log("[OpenH3-IR]", VERSION);
@@ -131,7 +132,7 @@ const BADGE_BY_KIND = {
              frame_anchor_first: "first", frame_anchor_last: "last", storyboard: "storyboard" },
   video: { subject: "copy", structure: "how it's shot", edit_source: "edit",
            continuation_source: "continue" },
-  sound: { bgm: "play", music_style: "style", beat_reference: "beat", sfx: "sfx",
+  sound: { bgm: "play it", music_style: "style", beat_reference: "beat", sfx: "sfx",
            voice_timbre: "voice" },
 };
 const DEFAULT_ROLE = { picture: "subject", video: "subject", sound: "bgm" };
@@ -227,6 +228,7 @@ class Tray {
 
     this.root = el("div", { class: "oh3-panel" }, top, cols, this.editor);
     this.watchDrags(this.root, null);
+    localize(this.root);
     this.render();
   }
 
@@ -269,10 +271,10 @@ class Tray {
   say(text, bad = false) {
     const nag = this.nag();
     const full = nag ? (text ? `${text} ${nag}` : nag) : (text || "");
-    this.msg.textContent = full;
+    this.msg.textContent = tr(full);
     // One line, and it ends in an ellipsis when it does not fit. A name can be long enough to push
     // a refusal past the edge, so the whole sentence is on the line itself as well.
-    this.msg.title = full;
+    this.msg.title = tr(full);
     this.msg.classList.toggle("oh3-bad", !!bad || !!nag);
   }
 
@@ -648,7 +650,8 @@ class Tray {
     // one is a file to put another in the place of, and both are aimed at by dropping on them.
     const aim = { kind, index };
     if (!slot) {
-      const empty = el("div", { class: "oh3-slot", textContent: `${PREFIX[kind]}${index + 1}`,
+      const empty = el("div", { class: "oh3-slot",
+        textContent: slotLabel(`${PREFIX[kind]}${index + 1}`),
         title: `drop a ${WORD[kind]} here, or click to browse for one`,
         onclick: () => this.pick(kind) });
       this.watchDrags(empty, aim);
