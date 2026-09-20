@@ -25,6 +25,7 @@
  */
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
+import { localize, tr } from "./i18n.js";
 
 const VERSION = "tray v16";
 console.log("[OpenH3-IR]", VERSION);
@@ -227,6 +228,7 @@ class Tray {
 
     this.root = el("div", { class: "oh3-panel" }, top, cols, this.editor);
     this.watchDrags(this.root, null);
+    localize(this.root);
     this.render();
   }
 
@@ -269,10 +271,10 @@ class Tray {
   say(text, bad = false) {
     const nag = this.nag();
     const full = nag ? (text ? `${text} ${nag}` : nag) : (text || "");
-    this.msg.textContent = full;
+    this.msg.textContent = tr(full);
     // One line, and it ends in an ellipsis when it does not fit. A name can be long enough to push
     // a refusal past the edge, so the whole sentence is on the line itself as well.
-    this.msg.title = full;
+    this.msg.title = tr(full);
     this.msg.classList.toggle("oh3-bad", !!bad || !!nag);
   }
 

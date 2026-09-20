@@ -31,6 +31,7 @@
  */
 import { app } from "../../scripts/app.js";
 import { api } from "../../scripts/api.js";
+import { localize, tr } from "./i18n.js";
 
 const VERSION = "setup v1";
 console.log("[OpenH3-IR]", VERSION);
@@ -329,6 +330,7 @@ class Panel {
       if (this.open && !inList && !onOpener) { this.open = null; this.renderList(); }
     });
 
+    localize(this.root);
     this.render();
     this.askCompiler();
     this.readKey();
@@ -392,8 +394,8 @@ class Panel {
   }
 
   write_msg(text, tone) {
-    this.msg.textContent = text || "";
-    this.msg.title = text || "";
+    this.msg.textContent = tr(text || "");
+    this.msg.title = tr(text || "");
     this.msg.className = "oh3s-msg" + (tone ? ` oh3s-${tone}` : "");
   }
 

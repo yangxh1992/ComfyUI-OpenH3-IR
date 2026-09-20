@@ -31,6 +31,7 @@
  * README: a stored direction belongs to this ComfyUI, and a workflow never depends on one.
  */
 import { app } from "../../scripts/app.js";
+import { localize, t, tr, unt } from "./i18n.js";
 import { api } from "../../scripts/api.js";
 /* The compiler's own three, generated rather than typed: the seven directions word for word, H3's
  * closed motion table, and the length the compiler refuses a longer direction at. See the header
@@ -186,6 +187,7 @@ class Panel {
       if (this.armed && !answering) { this.armed = null; this.renderControls(); this.renderList(); }
       if (this.listOpen && !inList && !onCaret) { this.listOpen = false; this.renderList(); }
     });
+    localize(this.root);
     this.render();
     this.refreshLibrary();
   }
@@ -202,7 +204,7 @@ class Panel {
   /** Write the two fields back into the widget. Empty on both sides writes an empty object, so a
    *  node dropped in and left alone is byte-identical to one that was never touched. */
   commit() {
-    const name = this.nameIn.value.trim();
+    const name = unt(this.nameIn.value.trim());
     const notes = this.notesIn.value;
     this.widget.value = (!name && !notes.trim()) ? "{}" : JSON.stringify({ name, notes });
     this.node.setDirtyCanvas?.(true, true);
@@ -219,8 +221,8 @@ class Panel {
    *  longer is not lost, the `title` carries it whole, but the tail is what goes, so put the thing
    *  to do at the front and the reassurance after it. */
   say(text, bad = false) {
-    this.msg.textContent = text || "";
-    this.msg.title = text || "";
+    this.msg.textContent = tr(text || "");
+    this.msg.title = tr(text || "");
     this.msg.classList.toggle("oh3d-bad", Boolean(bad));
   }
 
@@ -242,7 +244,7 @@ class Panel {
   /** Write the two fields, and record which stored direction they came from. */
   write(name, notes, from) {
     this.on = from ?? null;
-    this.nameIn.value = name;
+    this.nameIn.value = t(name);
     this.notesIn.value = notes;
     this.notesIn.scrollTop = 0;
     this.commit();
@@ -364,7 +366,7 @@ class Panel {
    *  rather than spoken -- a store that cannot be read is already said once, by `refreshLibrary`.
    */
   async reconcile() {
-    const name = this.nameIn.value.trim();
+    const name = unt(this.nameIn.value.trim());
     const notes = this.notesIn.value;
     if (this.on !== null || !name || !notes.trim() || !this.saved.includes(name)) return;
     let stored;
@@ -421,7 +423,7 @@ class Panel {
    *  that already exists -- because overwriting the one you are already editing is what save means.
    */
   async save() {
-    const name = this.nameIn.value.trim();
+    const name = unt(this.nameIn.value.trim());
     const notes = this.notesIn.value;
     if (!notes.trim()) { this.say("Nothing to save yet. Write the direction first.", true); return; }
     const refusal = this.refuseName(name);
@@ -500,8 +502,8 @@ class Panel {
      * here somebody could be surprised by -- start from a shipped one, name it yours, and the
      * shipped one is what you renamed. Reading `rename` before the click is the whole fix; it
      * costs no control and no second meaning. */
-    const renaming = this.on !== null && this.on !== this.nameIn.value.trim()
-                     && Boolean(this.nameIn.value.trim());
+    const shownName = unt(this.nameIn.value.trim());
+    const renaming = this.on !== null && this.on !== shownName && Boolean(shownName);
     this.saveBtn.textContent = this.armed === "save" ? "overwrite?" : (renaming ? "rename" : "save");
     this.saveBtn.title = renaming
       ? `Renames ${this.on} to what is in the field, keeping one direction rather than two. `
@@ -539,7 +541,7 @@ class Panel {
       onclick: () => this.choose(name),
     });
     this.list.append(row("", "no director", " oh3d-lquiet"));
-    for (const n of this.saved) this.list.append(row(n, n));
+    for (const n of this.saved) this.list.append(row(n, t(n)));
     if (!this.saved.length) {
       this.list.append(el("div", { class: "oh3d-lnote", textContent: this.libraryNote
         || "Nothing saved yet. Write a direction, give it a name, and press save." }));
@@ -576,7 +578,7 @@ class Panel {
 
   render() {
     const s = this.state();
-    this.nameIn.value = String(s.name || "");
+    this.nameIn.value = t(String(s.name || ""));
     this.notesIn.value = String(s.notes || "");
     // Repainting from the field is the one case where nothing was chosen: a workflow just loaded,
     // or the node was configured. What the graph carries is words, never a name pointing into this
